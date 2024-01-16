@@ -14,54 +14,72 @@
       rel="stylesheet"
     />
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
-    <!-- <style>
-      .ball {
-        float: left;
-        width: 60px;
-        height: 60px;
-        line-height: 60px;
-        font-size: 28px;
-        border-radius: 100%;
+    <style>
+      #container {
+        padding: 30px 0 10px;
+      }
+      .section_qr .winner_number {
         text-align: center;
-        vertical-align: middle;
+      }
+      .section_qr .winner_number h3 {
+        font-size: 50px;
+        color: #333;
+        letter-spacing: -0.025em;
+      }
+      .section_qr .winner_number .bx_winner {
+        margin-top: 22px;
+      }
+      .section_qr .winner_number .bx_winner .lotto .list {
+        padding-top: 13px;
+      }
+      .section_qr .winner_number .bx_winner .lotto .list .clr {
+        display: inline-block;
+        width: 40px;
+        height: 40px;
+        line-height: 40px;
+        font-weight: 700;
+        font-size: 28px;
         color: #fff;
-        font-weight: 500;
-        text-shadow: 0px 0px 3px rgba(73, 57, 0, 0.8);
-        margin-right: 6px;
+        letter-spacing: -0.025em;
+        vertical-align: middle;
+        border-radius: 100%;
       }
-
-      .ball1 {
-        background: #fbc400;
+      .section_qr .winner_number .bx_winner .lotto .list .clr ~ .clr {
+        margin-left: 3px;
       }
-      .ball2 {
-        background: #69c8f2;
+      .section_qr .winner_number .bx_winner .lotto .list .clr1 {
+        background: #e4a816; /*1~10*/
       }
-      .ball3 {
-        background: #ff7272;
+      .section_qr .winner_number .bx_winner .lotto .list .clr2 {
+        background: #1994da /*11~20*/;
       }
-      .ball4 {
-        background: #aaa;
+      .section_qr .winner_number .bx_winner .lotto .list .clr3 {
+        background: #e86352 /*21~30*/;
       }
-      .ball5 {
-        background: #b0d840;
+      .section_qr .winner_number .bx_winner .lotto .list .clr4 {
+        background: #8f8f8f /*31~40*/;
       }
-      .ball6 {
-        background: #c7c7c7;
+      .section_qr .winner_number .bx_winner .lotto .list .clr5 {
+        background: #5bb544 /*41~45*/;
       }
-    </style> -->
+    </style>
   </head>
   <body>
-    <h1>로또 번호 추첨기</h1>
-    <button
-      type="button"
-      class="btn btn-success"
-      onclick="javascript:location.reload()"
-    >
-      새로고침
-    </button>
-    <h4 id="drwNo"></h4>
-    <br />
-    <div id="lotto"></div>
+    <section id="container" class="section_qr">
+      <div class="winner_number">
+        <h3>승또 6/45</h3>
+        <button
+          type="button"
+          class="btn btn-success"
+          onclick="javascript:location.reload()"
+        >
+          새로고침
+        </button>
+        <div class="bx_winner">
+          <div class="lotto"></div>
+        </div>
+      </div>
+    </section>
 
     <script>
       let drwNo = 1;
@@ -1167,47 +1185,48 @@
         "12,16,21,24,41,43",
         "17,26,29,30,31,43",
         "6,7,13,28,36,42",
+        "13,14,22,26,37,38",
       ];
-      let setLotto = function () {
-        let sfchk = "";
-        let pushData = "";
-        fetch(
-          "https://www.dhlottery.co.kr/common.do?method=getLottoNumber&drwNo=" +
-            drwNo,
-          {
-            method: "GET",
-          }
-        )
-          .then((response) => {
-            return response.json();
-          })
-          .then((data) => {
-            sfchk = data.returnValue;
-            if (sfchk === "fail") {
-              console.log(lottoArr);
-              for (let i = 0; i < 5; i++) {
-                getLotto();
-              }
-            } else {
-              pushData =
-                data.drwtNo1 +
-                "," +
-                data.drwtNo2 +
-                "," +
-                data.drwtNo3 +
-                "," +
-                data.drwtNo4 +
-                "," +
-                data.drwtNo5 +
-                "," +
-                data.drwtNo6;
-              document.getElementById("drwNo").innerHTML = drwNo;
-              lottoArr.push(pushData);
-              drwNo++;
-              setLotto();
-            }
-          });
-      };
+      // let setLotto = function () {
+      //   let sfchk = "";
+      //   let pushData = "";
+      //   fetch(
+      //     "https://www.dhlottery.co.kr/common.do?method=getLottoNumber&drwNo=" +
+      //       drwNo,
+      //     {
+      //       method: "GET",
+      //     }
+      //   )
+      //     .then((response) => {
+      //       return response.json();
+      //     })
+      //     .then((data) => {
+      //       sfchk = data.returnValue;
+      //       if (sfchk === "fail") {
+      //         console.log(lottoArr);
+      //         for (let i = 0; i < 5; i++) {
+      //           getLotto();
+      //         }
+      //       } else {
+      //         pushData =
+      //           data.drwtNo1 +
+      //           "," +
+      //           data.drwtNo2 +
+      //           "," +
+      //           data.drwtNo3 +
+      //           "," +
+      //           data.drwtNo4 +
+      //           "," +
+      //           data.drwtNo5 +
+      //           "," +
+      //           data.drwtNo6;
+      //         document.getElementById("drwNo").innerHTML = drwNo;
+      //         lottoArr.push(pushData);
+      //         drwNo++;
+      //         setLotto();
+      //       }
+      //     });
+      // };
       //setLotto();
 
       function getLotto(type) {
@@ -1228,36 +1247,47 @@
         console.log("완성: " + lotto.toString());
         if (setLottoArr.indexOf(lotto.toString()) === -1) {
           console.log(lotto.toString());
-          // document.getElementById("drwtNo1").innerHTML = lotto[0];
-          // document.getElementById("drwtNo2").innerHTML = lotto[1];
-          // document.getElementById("drwtNo3").innerHTML = lotto[2];
-          // document.getElementById("drwtNo4").innerHTML = lotto[3];
-          // document.getElementById("drwtNo5").innerHTML = lotto[4];
-          // document.getElementById("drwtNo6").innerHTML = lotto[5];
-          let html =
+          let newHtml =
             `
-            <div class="btn-group btn-group-lg" role="group">
-            <button type="button" class="btn btn-outline-primary">` +
+            <div class="list">
+              <div class="clr ` +
+            strClr(lotto[0]) +
+            `"><span>` +
             lotto[0] +
-            `</button>
-            <button type="button" class="btn btn-outline-primary">` +
+            `</span>
+              </div>
+              <div class="clr ` +
+            strClr(lotto[1]) +
+            `"><span>` +
             lotto[1] +
-            `</button>
-            <button type="button" class="btn btn-outline-primary">` +
+            `</span>
+              </div>
+              <div class="clr ` +
+            strClr(lotto[2]) +
+            `"><span>` +
             lotto[2] +
-            `</button>
-            <button type="button" class="btn btn-outline-primary">` +
+            `</span>
+              </div>
+              <div class="clr ` +
+            strClr(lotto[3]) +
+            `"><span>` +
             lotto[3] +
-            `</button>
-            <button type="button" class="btn btn-outline-primary">` +
+            `</span>
+              </div>
+              <div class="clr ` +
+            strClr(lotto[4]) +
+            `"><span>` +
             lotto[4] +
-            `</button>
-            <button type="button" class="btn btn-outline-primary">` +
+            `</span>
+              </div>
+              <div class="clr ` +
+            strClr(lotto[5]) +
+            `"><span>` +
             lotto[5] +
-            `</button>
-            </div>
-          `;
-          $("#lotto").append(html);
+            `</span>
+              </div>
+            </div>`;
+          $(".lotto").append(newHtml);
         } else {
           getLotto();
         }
@@ -1265,6 +1295,24 @@
       }
       for (let i = 0; i < 5; i++) {
         getLotto();
+      }
+
+      <!-- 번호별 컬러값: clr1: 1~10, clr2: 11~20, clr3: 21~30, clr4: 31~40, clr5: 41~45  -->
+      function strClr(lottoNum) {
+        console.log(typeof lottoNum);
+        let classClr = "";
+        if (lottoNum < 11) {
+          classClr = "clr1";
+        } else if (11 <= lottoNum && lottoNum < 21) {
+          classClr = "clr2";
+        } else if (21 <= lottoNum && lottoNum < 31) {
+          classClr = "clr3";
+        } else if (31 <= lottoNum && lottoNum < 41) {
+          classClr = "clr4";
+        } else {
+          classClr = "clr5";
+        }
+        return classClr;
       }
     </script>
   </body>
