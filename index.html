@@ -25,12 +25,19 @@
       .section_qr .winner_number {
         text-align: center;
       }
+      .section_qr .footer_f {
+        text-align: center;
+        position: absolute;
+        left: 0px;
+        right: 0px;
+        bottom: 10px;
+      }
       .section_qr .winner_number h3 {
         font-size: 50px;
         color: #333;
         letter-spacing: -0.025em;
       }
-      .section_qr .winner_number button {
+      .section_qr .footer_f button {
         font-size: 20px;
         font-weight: 700;
         width: 300px;
@@ -90,7 +97,15 @@
   <body>
     <section id="container" class="section_qr">
       <div class="winner_number">
-        <h3>승또 6/45</h3>
+        <h2><strong>승또 6/45</strong></h2>
+        <div class="bx_winner">
+          <div class="lotto"></div>
+        </div>
+      </div>
+      <br />
+      <br />
+      <br />
+      <footer class="footer_f">
         <button
           type="button"
           class="btn btn-success"
@@ -98,16 +113,8 @@
         >
           새로고침
         </button>
-        <div class="bx_winner">
-          <div class="lotto"></div>
-        </div>
-      </div>
+      </footer>
     </section>
-    <div class="bx_add_msg">
-      <div class="info">
-        <p>※ 승또6/45 단순 조회만 됩니다.</p>
-      </div>
-    </div>
 
     <script>
       let drwNo = 1;
