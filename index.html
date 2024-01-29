@@ -109,9 +109,9 @@
         <button
           type="button"
           class="btn btn-success"
-          onclick="javascript:location.reload()"
+          onclick="javascript:getLotto(5);"
         >
-          새로고침
+          조회하기
         </button>
       </footer>
     </section>
@@ -1222,6 +1222,7 @@
         "6,7,13,28,36,42",
         "13,14,22,26,37,38",
         "10,12,29,31,40,44",
+        "1,7,21,30,35,38",
       ];
       // let setLotto = function () {
       //   let sfchk = "";
@@ -1264,72 +1265,73 @@
       //     });
       // };
       //setLotto();
+      window.onload = function () {
+        getLotto(5);
+      };
 
-      function getLotto(type) {
-        console.log("getLotto() START");
-        let lotto = [];
-        for (let i = 0; i < 6; i++) {
-          let num = Math.floor(Math.random() * 45) + 1;
-          for (let j in lotto) {
-            while (num == lotto[j]) {
-              num = Math.floor(Math.random() * 45) + 1;
+      function getLotto(times) {
+        $(".lotto").after('<div class="lotto"></div>').remove();
+        for (let i = 0; i < times; i++) {
+          let lotto = [];
+          for (let i = 0; i < 6; i++) {
+            let num = Math.floor(Math.random() * 45) + 1;
+            for (let j in lotto) {
+              while (num == lotto[j]) {
+                num = Math.floor(Math.random() * 45) + 1;
+              }
             }
+            lotto.push(num);
           }
-          lotto.push(num);
+          lotto.sort(function (a, b) {
+            return a - b;
+          });
+          console.log("6/45: " + lotto.toString());
+          if (setLottoArr.indexOf(lotto.toString()) === -1) {
+            let newHtml =
+              `
+              <div class="list">
+                <div class="animate__animated animate__zoomInDown clr ` +
+              strClr(lotto[0]) +
+              `"><span>` +
+              lotto[0] +
+              `</span>
+                </div>
+                <div class="animate__animated animate__rollIn clr ` +
+              strClr(lotto[1]) +
+              `"><span>` +
+              lotto[1] +
+              `</span>
+                </div>
+                <div class="animate__animated animate__flip clr ` +
+              strClr(lotto[2]) +
+              `"><span>` +
+              lotto[2] +
+              `</span>
+                </div>
+                <div class="animate__animated animate__swing clr ` +
+              strClr(lotto[3]) +
+              `"><span>` +
+              lotto[3] +
+              `</span>
+                </div>
+                <div class="animate__animated animate__zoomInUp clr ` +
+              strClr(lotto[4]) +
+              `"><span>` +
+              lotto[4] +
+              `</span>
+                </div>
+                <div class="animate__animated animate__backInDown clr ` +
+              strClr(lotto[5]) +
+              `"><span>` +
+              lotto[5] +
+              `</span>
+                </div>
+              </div>`;
+            $(".lotto").append(newHtml);
+          } else {
+            i--;
+          }
         }
-        lotto.sort(function (a, b) {
-          return a - b;
-        });
-        console.log("완성: " + lotto.toString());
-        if (setLottoArr.indexOf(lotto.toString()) === -1) {
-          let newHtml =
-            `
-            <div class="list">
-              <div class="animate__animated animate__zoomInDown clr ` +
-            strClr(lotto[0]) +
-            `"><span>` +
-            lotto[0] +
-            `</span>
-              </div>
-              <div class="animate__animated animate__rollIn clr ` +
-            strClr(lotto[1]) +
-            `"><span>` +
-            lotto[1] +
-            `</span>
-              </div>
-              <div class="animate__animated animate__flip clr ` +
-            strClr(lotto[2]) +
-            `"><span>` +
-            lotto[2] +
-            `</span>
-              </div>
-              <div class="animate__animated animate__swing clr ` +
-            strClr(lotto[3]) +
-            `"><span>` +
-            lotto[3] +
-            `</span>
-              </div>
-              <div class="animate__animated animate__zoomInUp clr ` +
-            strClr(lotto[4]) +
-            `"><span>` +
-            lotto[4] +
-            `</span>
-              </div>
-              <div class="animate__animated animate__backInDown clr ` +
-            strClr(lotto[5]) +
-            `"><span>` +
-            lotto[5] +
-            `</span>
-              </div>
-            </div>`;
-          $(".lotto").append(newHtml);
-        } else {
-          getLotto();
-        }
-        console.log("getLotto() END");
-      }
-      for (let i = 0; i < 5; i++) {
-        getLotto();
       }
 
       <!-- 번호별 컬러값: clr1: 1~10, clr2: 11~20, clr3: 21~30, clr4: 31~40, clr5: 41~45  -->
