@@ -1268,6 +1268,8 @@
         "14,16,19,20,29,34",
         "5,12,15,30,37,40",
         "7,10,22,29,31,38",
+        "7,11,12,21,26,35",
+        "2,8,28,30,37,41",
       ];
       // let setLotto = function () {
       //   let sfchk = "";
@@ -1317,83 +1319,52 @@
       function getLotto(times) {
         $(".lotto").after('<div class="lotto"></div>').remove();
         for (let i = 0; i < times; i++) {
-          let lotto = [];
-          for (let i = 0; i < 6; i++) {
+          let lotto = new Set();
+          while (lotto.size < 6) {
             let num = Math.floor(Math.random() * 45) + 1;
-            for (let j in lotto) {
-              while (num === lotto[j]) {
-                num = Math.floor(Math.random() * 45) + 1;
-              }
-            }
-            lotto.push(num);
+            lotto.add(num);
           }
-          lotto.sort(function (a, b) {
-            return a - b;
-          });
-          console.log("6/45: " + lotto.toString());
-          if (setLottoArr.indexOf(lotto.toString()) === -1) {
-            let newHtml =
-              `
-              <div class="list">
-                <div class="animate__animated animate__zoomInDown clr ` +
-              strClr(lotto[0]) +
-              `"><span>` +
-              lotto[0] +
-              `</span>
-                </div>
-                <div class="animate__animated animate__rollIn clr ` +
-              strClr(lotto[1]) +
-              `"><span>` +
-              lotto[1] +
-              `</span>
-                </div>
-                <div class="animate__animated animate__flip clr ` +
-              strClr(lotto[2]) +
-              `"><span>` +
-              lotto[2] +
-              `</span>
-                </div>
-                <div class="animate__animated animate__swing clr ` +
-              strClr(lotto[3]) +
-              `"><span>` +
-              lotto[3] +
-              `</span>
-                </div>
-                <div class="animate__animated animate__zoomInUp clr ` +
-              strClr(lotto[4]) +
-              `"><span>` +
-              lotto[4] +
-              `</span>
-                </div>
-                <div class="animate__animated animate__backInDown clr ` +
-              strClr(lotto[5]) +
-              `"><span>` +
-              lotto[5] +
-              `</span>
-                </div>
-              </div>`;
-            $(".lotto").append(newHtml);
+          let sortedLotto = Array.from(lotto).sort((a, b) => a - b);
+          console.log("6/45: " + sortedLotto.toString());
+          if (!setLottoArr.includes(sortedLotto.toString())) {
+            appendLotto(sortedLotto);
           } else {
             i--;
           }
         }
       }
 
+      function appendLotto(lotto) {
+        let newHtml = lotto
+          .map(
+            (num, index) =>
+              `<div class="animate__animated animate__${getAnimation(
+                index
+              )} clr ${strClr(num)}"><span>${num}</span></div>`
+          )
+          .join("");
+        $(".lotto").append(`<div class="list">${newHtml}</div>`);
+      }
+
+      function getAnimation(index) {
+        const animations = [
+          "zoomInDown",
+          "rollIn",
+          "flip",
+          "swing",
+          "zoomInUp",
+          "backInDown",
+        ];
+        return animations[index % animations.length];
+      }
+
       <!-- 번호별 컬러값: clr1: 1~10, clr2: 11~20, clr3: 21~30, clr4: 31~40, clr5: 41~45  -->
       function strClr(lottoNum) {
-        let classClr = "";
-        if (lottoNum < 11) {
-          classClr = "clr1";
-        } else if (11 <= lottoNum && lottoNum < 21) {
-          classClr = "clr2";
-        } else if (21 <= lottoNum && lottoNum < 31) {
-          classClr = "clr3";
-        } else if (31 <= lottoNum && lottoNum < 41) {
-          classClr = "clr4";
-        } else {
-          classClr = "clr5";
-        }
-        return classClr;
+        if (lottoNum < 11) return "clr1";
+        if (lottoNum < 21) return "clr2";
+        if (lottoNum < 31) return "clr3";
+        if (lottoNum < 41) return "clr4";
+        return "clr5";
       }
     </script>
   </body>
