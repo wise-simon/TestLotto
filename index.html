@@ -11,8 +11,20 @@
     />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+
     <style>
+      /* CSS 변수 지정 */
+      :root {
+        --color-ball-1: #e4a816; /* 1~10번 */
+        --color-ball-2: #1994da; /* 11~20번 */
+        --color-ball-3: #e86352; /* 21~30번 */
+        --color-ball-4: #8f8f8f; /* 31~40번 */
+        --color-ball-5: #5bb544; /* 41~45번 */
+        --color-text-main: #333;
+        --color-bg-light: #f5f5f5;
+        --color-white: #fff;
+      }
+
       #container {
         padding: 30px 0 10px;
       }
@@ -28,7 +40,7 @@
       }
       .section_qr .winner_number h3 {
         font-size: 50px;
-        color: #333;
+        color: var(--color-text-main);
         letter-spacing: -0.025em;
       }
       .section_qr .footer_f button {
@@ -42,46 +54,51 @@
       }
       .section_qr .winner_number .bx_winner .lotto .list {
         padding-top: 13px;
+        /* Flexbox 사용으로 레이아웃 개선 */
+        display: flex;
+        justify-content: center;
+        gap: 3px;
       }
       .section_qr .winner_number .bx_winner .lotto .list .clr {
-        display: inline-block;
+        display: flex;
+        justify-content: center;
+        align-items: center;
         width: 40px;
         height: 40px;
-        line-height: 40px;
         font-weight: 700;
         font-size: 28px;
-        color: #fff;
+        color: var(--color-white);
         letter-spacing: -0.025em;
-        vertical-align: middle;
         border-radius: 100%;
       }
-      .section_qr .winner_number .bx_winner .lotto .list .clr ~ .clr {
-        margin-left: 3px;
-      }
+      /* 공통 색상 적용 */
       .section_qr .winner_number .bx_winner .lotto .list .clr1 {
-        background: #e4a816; /*1~10*/
+        background: var(--color-ball-1);
       }
       .section_qr .winner_number .bx_winner .lotto .list .clr2 {
-        background: #1994da /*11~20*/;
+        background: var(--color-ball-2);
       }
       .section_qr .winner_number .bx_winner .lotto .list .clr3 {
-        background: #e86352 /*21~30*/;
+        background: var(--color-ball-3);
       }
       .section_qr .winner_number .bx_winner .lotto .list .clr4 {
-        background: #8f8f8f /*31~40*/;
+        background: var(--color-ball-4);
       }
       .section_qr .winner_number .bx_winner .lotto .list .clr5 {
-        background: #5bb544 /*41~45*/;
+        background: var(--color-ball-5);
       }
 
       .bx_add_msg {
         position: relative;
         padding: 22px 22px;
-        background: #f5f5f5;
+        background: var(--color-bg-light);
         text-align: center;
+        /* Flexbox 사용 */
+        display: flex;
+        align-items: center;
+        justify-content: center;
       }
       .bx_add_msg .info {
-        float: left;
         width: calc(100% - 53px);
         margin-top: -3px;
         padding-left: 19px;
@@ -100,23 +117,92 @@
       <br />
       <br />
       <footer class="footer_f">
-        <button
-          type="button"
-          class="btn btn-success"
-          onclick="javascript:window.open('https://m.search.naver.com/search.naver?sm=mtp_hty.top&where=m&query=%EB%A1%9C%EB%98%90%EB%8B%B9%EC%B2%A8%EB%B2%88%ED%98%B8');"
-        >
-          로또당첨번호 바로가기
-        </button>
+        <button type="button" class="btn btn-success" id="btnLottoLink">로또당첨번호 바로가기</button>
         <br />
         <br />
-        <button type="button" class="btn btn-success" onclick="javascript:getLotto(5);">조회하기</button>
+        <button type="button" class="btn btn-success" id="btnGetLotto">조회하기</button>
       </footer>
     </section>
 
     <script>
-      let drwNo = 1;
-      let lottoArr = [];
-      let setLottoArr = [
+      // DOM 로드 완료 후 실행
+      document.addEventListener("DOMContentLoaded", () => {
+        getLotto(5);
+
+        // '로또당첨번호 바로가기' 버튼 클릭 이벤트
+        document.getElementById("btnLottoLink").addEventListener("click", () => {
+          window.open(
+            "https://m.search.naver.com/search.naver?sm=mtp_hty.top&where=m&query=%EB%A1%9C%EB%98%90%EB%8B%B9%EC%B2%A8%EB%B2%88%ED%98%B8"
+          );
+        });
+
+        // '조회하기' 버튼 클릭 이벤트 (번호 재생성)
+        document.getElementById("btnGetLotto").addEventListener("click", () => {
+          getLotto(5);
+        });
+      });
+
+      /**
+       * 로또 번호 생성 함수
+       * @param {number} times - 생성할 횟수
+       */
+      function getLotto(times) {
+        const lottoContainer = document.querySelector(".lotto");
+        // 기존 내용 초기화
+        lottoContainer.innerHTML = "";
+
+        let count = 0;
+        let attempts = 0;
+        const maxAttempts = times * 500; // 무한 반복 방지용 안전 장치
+
+        while (count < times && attempts < maxAttempts) {
+          attempts++;
+          const lotto = new Set();
+          // 1부터 45까지의 유니크한 숫자 6개 뽑기
+          while (lotto.size < 6) {
+            lotto.add(Math.floor(Math.random() * 45) + 1);
+          }
+
+          // 오름차순 정렬
+          const sortedLotto = Array.from(lotto).sort((a, b) => a - b);
+          const key = sortedLotto.join(",");
+
+          // 이전에 나온 번호 조합인지 확인 (중복 제거)
+          if (!setLottoArr.has(key)) {
+            appendLotto(sortedLotto);
+            setLottoArr.add(key); // 이력에 추가
+            count++;
+          }
+        }
+
+        if (count < times) {
+          console.warn(`유니크한 조합을 ${count}개만 생성했습니다.`);
+        }
+      }
+
+      /**
+       * HTML에 로또 번호 표시 함수
+       * @param {Array} lotto - 로또 번호 배열
+       */
+      function appendLotto(lotto) {
+        const listDiv = document.createElement("div");
+        listDiv.className = "list";
+
+        const html = lotto
+          .map((num) => {
+            // 번호 범위에 따른 색상 결정 (10단위)
+            const colorClass = `clr${Math.ceil(num / 10)}`;
+            // 애니메이션 효과 적용
+            return `<div class="animate__animated animate__rollIn clr ${colorClass}"><span>${num}</span></div>`;
+          })
+          .join("");
+
+        listDiv.innerHTML = html;
+        document.querySelector(".lotto").appendChild(listDiv);
+      }
+
+      // 과거 당첨 번호 목록 (Set 사용으로 검색 속도 향상)
+      const setLottoArr = new Set([
         "10,23,29,33,37,40",
         "9,13,21,25,32,42",
         "11,16,19,21,27,31",
@@ -1317,95 +1403,7 @@
         "16,24,25,30,31,32",
         "1,2,4,16,20,32",
         "7,9,24,27,35,36",
-      ];
-      // let setLotto = function () {
-      //   let sfchk = "";
-      //   let pushData = "";
-      //   fetch(
-      //     "https://www.dhlottery.co.kr/common.do?method=getLottoNumber&drwNo=" +
-      //       drwNo,
-      //     {
-      //       method: "GET",
-      //     }
-      //   )
-      //     .then((response) => {
-      //       return response.json();
-      //     })
-      //     .then((data) => {
-      //       sfchk = data.returnValue;
-      //       if (sfchk === "fail") {
-      //         console.log(lottoArr);
-      //         for (let i = 0; i < 5; i++) {
-      //           getLotto();
-      //         }
-      //       } else {
-      //         pushData =
-      //           data.drwtNo1 +
-      //           "," +
-      //           data.drwtNo2 +
-      //           "," +
-      //           data.drwtNo3 +
-      //           "," +
-      //           data.drwtNo4 +
-      //           "," +
-      //           data.drwtNo5 +
-      //           "," +
-      //           data.drwtNo6;
-      //         document.getElementById("drwNo").innerHTML = drwNo;
-      //         lottoArr.push(pushData);
-      //         drwNo++;
-      //         setLotto();
-      //       }
-      //     });
-      // };
-      //setLotto();
-      window.onload = function () {
-        getLotto(5);
-      };
-
-      function getLotto(times) {
-        $(".lotto").after('<div class="lotto"></div>').remove();
-        for (let i = 0; i < times; i++) {
-          let lotto = new Set();
-          while (lotto.size < 6) {
-            let num = Math.floor(Math.random() * 45) + 1;
-            lotto.add(num);
-          }
-          let sortedLotto = Array.from(lotto).sort((a, b) => a - b);
-          console.log("6/45: " + sortedLotto.toString());
-          if (!setLottoArr.includes(sortedLotto.toString())) {
-            appendLotto(sortedLotto);
-          } else {
-            i--;
-          }
-        }
-      }
-
-      function appendLotto(lotto) {
-        let newHtml = lotto
-          .map(
-            (num, index) =>
-              `<div class="animate__animated animate__${getAnimation(index)} clr ${strClr(
-                num
-              )}"><span>${num}</span></div>`
-          )
-          .join("");
-        $(".lotto").append(`<div class="list">${newHtml}</div>`);
-      }
-
-      function getAnimation(index) {
-        const animations = ["zoomInDown", "rollIn", "flip", "swing", "zoomInUp", "backInDown"];
-        return animations[index % animations.length];
-      }
-
-      <!-- 번호별 컬러값: clr1: 1~10, clr2: 11~20, clr3: 21~30, clr4: 31~40, clr5: 41~45  -->
-      function strClr(lottoNum) {
-        if (lottoNum < 11) return "clr1";
-        if (lottoNum < 21) return "clr2";
-        if (lottoNum < 31) return "clr3";
-        if (lottoNum < 41) return "clr4";
-        return "clr5";
-      }
+      ]);
     </script>
   </body>
 </html>
