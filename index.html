@@ -125,84 +125,8 @@
     </section>
 
     <script>
-      // DOM 로드 완료 후 실행
-      document.addEventListener("DOMContentLoaded", () => {
-        getLotto(5);
-
-        // '로또당첨번호 바로가기' 버튼 클릭 이벤트
-        document.getElementById("btnLottoLink").addEventListener("click", () => {
-          window.open(
-            "https://m.search.naver.com/search.naver?sm=mtp_hty.top&where=m&query=%EB%A1%9C%EB%98%90%EB%8B%B9%EC%B2%A8%EB%B2%88%ED%98%B8"
-          );
-        });
-
-        // '조회하기' 버튼 클릭 이벤트 (번호 재생성)
-        document.getElementById("btnGetLotto").addEventListener("click", () => {
-          getLotto(5);
-        });
-      });
-
-      /**
-       * 로또 번호 생성 함수
-       * @param {number} times - 생성할 횟수
-       */
-      function getLotto(times) {
-        const lottoContainer = document.querySelector(".lotto");
-        // 기존 내용 초기화
-        lottoContainer.innerHTML = "";
-
-        let count = 0;
-        let attempts = 0;
-        const maxAttempts = times * 500; // 무한 반복 방지용 안전 장치
-
-        while (count < times && attempts < maxAttempts) {
-          attempts++;
-          const lotto = new Set();
-          // 1부터 45까지의 유니크한 숫자 6개 뽑기
-          while (lotto.size < 6) {
-            lotto.add(Math.floor(Math.random() * 45) + 1);
-          }
-
-          // 오름차순 정렬
-          const sortedLotto = Array.from(lotto).sort((a, b) => a - b);
-          const key = sortedLotto.join(",");
-
-          // 이전에 나온 번호 조합인지 확인 (중복 제거)
-          if (!setLottoArr.has(key)) {
-            appendLotto(sortedLotto);
-            setLottoArr.add(key); // 이력에 추가
-            count++;
-          }
-        }
-
-        if (count < times) {
-          console.warn(`유니크한 조합을 ${count}개만 생성했습니다.`);
-        }
-      }
-
-      /**
-       * HTML에 로또 번호 표시 함수
-       * @param {Array} lotto - 로또 번호 배열
-       */
-      function appendLotto(lotto) {
-        const listDiv = document.createElement("div");
-        listDiv.className = "list";
-
-        const html = lotto
-          .map((num) => {
-            // 번호 범위에 따른 색상 결정 (10단위)
-            const colorClass = `clr${Math.ceil(num / 10)}`;
-            // 애니메이션 효과 적용
-            return `<div class="animate__animated animate__rollIn clr ${colorClass}"><span>${num}</span></div>`;
-          })
-          .join("");
-
-        listDiv.innerHTML = html;
-        document.querySelector(".lotto").appendChild(listDiv);
-      }
-
       // 과거 당첨 번호 목록 (Set 사용으로 검색 속도 향상)
-      const setLottoArr = new Set([
+      const LOTTO_HISTORY = [
         "10,23,29,33,37,40",
         "9,13,21,25,32,42",
         "11,16,19,21,27,31",
@@ -1401,9 +1325,85 @@
         "1,5,7,26,28,43",
         "26,30,33,38,39,41",
         "16,24,25,30,31,32",
-        "1,2,4,16,20,32",
         "7,9,24,27,35,36",
-      ]);
+        "5,12,21,33,37,40",
+      ];
+
+      // 로또 히스토리 초기화
+      const lottoHistory = new Set(LOTTO_HISTORY);
+
+      /**
+       * 로또 번호 생성 함수 (화살표 함수)
+       * @param {number} times - 생성할 횟수
+       */
+      const getLotto = (times) => {
+        const lottoContainer = document.querySelector(".lotto");
+        lottoContainer.innerHTML = "";
+
+        let count = 0;
+        const maxAttempts = times * 500;
+
+        for (let attempts = 0; attempts < maxAttempts && count < times; attempts++) {
+          const lotto = new Set();
+
+          // 1부터 45까지의 유니크한 숫자 6개 생성
+          while (lotto.size < 6) {
+            lotto.add(Math.floor(Math.random() * 45) + 1);
+          }
+
+          const sortedLotto = Array.from(lotto).sort((a, b) => a - b);
+          const key = sortedLotto.join(",");
+
+          // 중복 확인 및 추가
+          if (!lottoHistory.has(key)) {
+            appendLotto(sortedLotto);
+            lottoHistory.add(key);
+            count++;
+          }
+        }
+
+        if (count < times) {
+          console.warn(`경고: ${times}개 중 ${count}개의 유니크한 조합만 생성되었습니다.`);
+        }
+      };
+
+      /**
+       * HTML에 로또 번호 표시 함수 (화살표 함수)
+       * @param {Array<number>} lotto - 로또 번호 배열
+       */
+      const appendLotto = (lotto) => {
+        const listDiv = document.createElement("div");
+        listDiv.className = "list";
+
+        listDiv.innerHTML = lotto
+          .map((num) => {
+            const colorClass = `clr${Math.ceil(num / 10)}`;
+            return `<div class="animate__animated animate__rollIn clr ${colorClass}"><span>${num}</span></div>`;
+          })
+          .join("");
+
+        document.querySelector(".lotto").appendChild(listDiv);
+      };
+
+      /**
+       * DOM 로드 완료 후 초기화
+       */
+      document.addEventListener("DOMContentLoaded", () => {
+        // 초기 로또 번호 생성 (5개)
+        getLotto(5);
+
+        // 로또당첨번호 바로가기 버튼
+        const naverLottoUrl =
+          "https://m.search.naver.com/search.naver?sm=mtp_hty.top&where=m&query=%EB%A1%9C%EB%98%90%EB%8B%B9%EC%B2%A8%EB%B2%88%ED%98%B8";
+        document.getElementById("btnLottoLink").addEventListener("click", () => {
+          window.open(naverLottoUrl);
+        });
+
+        // 조회하기 버튼 (번호 재생성)
+        document.getElementById("btnGetLotto").addEventListener("click", () => {
+          getLotto(5);
+        });
+      });
     </script>
   </body>
 </html>
