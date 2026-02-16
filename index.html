@@ -1334,6 +1334,8 @@
         "10,22,24,27,38,45",
         "6,27,30,36,38,42",
         "2,17,20,35,37,39",
+        "1,7,9,17,27,38",
+        "23,26,27,35,38,40",
       ];
 
       // 로또 히스토리 초기화
@@ -1347,31 +1349,25 @@
         const lottoContainer = document.querySelector(".lotto");
         lottoContainer.innerHTML = "";
 
-        let count = 0;
-        const maxAttempts = times * 500;
+        const generated = [];
 
-        for (let attempts = 0; attempts < maxAttempts && count < times; attempts++) {
+        while (generated.length < times) {
           const lotto = new Set();
-
-          // 1부터 45까지의 유니크한 숫자 6개 생성
           while (lotto.size < 6) {
             lotto.add(Math.floor(Math.random() * 45) + 1);
           }
 
-          const sortedLotto = Array.from(lotto).sort((a, b) => a - b);
-          const key = sortedLotto.join(",");
+          const key = Array.from(lotto)
+            .sort((a, b) => a - b)
+            .join(",");
 
-          // 중복 확인 및 추가
           if (!lottoHistory.has(key)) {
-            appendLotto(sortedLotto);
+            generated.push(Array.from(lotto).sort((a, b) => a - b));
             lottoHistory.add(key);
-            count++;
           }
         }
 
-        if (count < times) {
-          console.warn(`경고: ${times}개 중 ${count}개의 유니크한 조합만 생성되었습니다.`);
-        }
+        generated.forEach((lotto) => appendLotto(lotto));
       };
 
       /**
