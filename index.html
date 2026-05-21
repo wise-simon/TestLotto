@@ -1355,50 +1355,56 @@
       const lottoHistory = new Set(LOTTO_HISTORY);
 
       /**
-       * 로또 번호 생성 함수 (화살표 함수)
+       * 로또 번호 생성 및 화면 출력 함수 (성능 최적화 버전)
        * @param {number} times - 생성할 횟수
        */
       const getLotto = (times) => {
         const lottoContainer = document.querySelector(".lotto");
-        lottoContainer.innerHTML = "";
+        if (!lottoContainer) return;
 
+        lottoContainer.innerHTML = ""; // 기존 번호 초기화
+
+        // DOM 렌더링 최적화를 위한 DocumentFragment 생성
+        const fragment = document.createDocumentFragment();
         const generated = [];
+        let attempts = 0;
+        const maxAttempts = 10000; // 무한 루프 예방 안전장치
 
-        while (generated.length < times) {
+        while (generated.length < times && attempts < maxAttempts) {
+          attempts++;
           const lotto = new Set();
           while (lotto.size < 6) {
             lotto.add(Math.floor(Math.random() * 45) + 1);
           }
 
-          const key = Array.from(lotto)
-            .sort((a, b) => a - b)
-            .join(",");
+          // [최적화 1] 정렬을 1회만 수행하여 변수에 캐싱
+          const sortedLotto = Array.from(lotto).sort((a, b) => a - b);
+          const key = sortedLotto.join(",");
 
+          // [최적화 2] Set 객체의 빠른 O(1) 조회 성능을 활용한 중복 검사
           if (!lottoHistory.has(key)) {
-            generated.push(Array.from(lotto).sort((a, b) => a - b));
+            generated.push(sortedLotto);
             lottoHistory.add(key);
           }
         }
 
-        generated.forEach((lotto) => appendLotto(lotto));
-      };
+        // [최적화 3] DocumentFragment에 임시 노드를 추가하여 단 한 번만 DOM 반영
+        generated.forEach((lotto) => {
+          const listDiv = document.createElement("div");
+          listDiv.className = "list";
 
-      /**
-       * HTML에 로또 번호 표시 함수 (화살표 함수)
-       * @param {Array<number>} lotto - 로또 번호 배열
-       */
-      const appendLotto = (lotto) => {
-        const listDiv = document.createElement("div");
-        listDiv.className = "list";
+          listDiv.innerHTML = lotto
+            .map((num) => {
+              const colorClass = `clr${Math.ceil(num / 10)}`;
+              return `<div class="animate__animated animate__rollIn clr ${colorClass}"><span>${num}</span></div>`;
+            })
+            .join("");
 
-        listDiv.innerHTML = lotto
-          .map((num) => {
-            const colorClass = `clr${Math.ceil(num / 10)}`;
-            return `<div class="animate__animated animate__rollIn clr ${colorClass}"><span>${num}</span></div>`;
-          })
-          .join("");
+          fragment.appendChild(listDiv);
+        });
 
-        document.querySelector(".lotto").appendChild(listDiv);
+        // 실제 브라우저 화면(DOM)에는 최종적으로 단 1회만 노드 삽입
+        lottoContainer.appendChild(fragment);
       };
 
       /**
