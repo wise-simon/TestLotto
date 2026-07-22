@@ -9,8 +9,14 @@
       rel="icon"
       href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/wcAAwAB/8ZZvFkAAAAASUVORK5CYII="
     />
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"
+    />
 
     <style>
       /* CSS 변수 지정 */
@@ -103,6 +109,12 @@
         margin-top: -3px;
         padding-left: 19px;
       }
+      /* 히스토리 로드 실패 시 에러 표시 */
+      .load_error {
+        color: #dc3545;
+        font-weight: 700;
+        padding: 20px;
+      }
     </style>
   </head>
   <body>
@@ -117,16 +129,22 @@
       <br />
       <br />
       <footer class="footer_f">
-        <button type="button" class="btn btn-success" id="btnLottoLink">로또당첨번호 바로가기</button>
+        <button type="button" class="btn btn-success" id="btnLottoLink">
+          로또당첨번호 바로가기
+        </button>
         <br />
         <br />
-        <button type="button" class="btn btn-success" id="btnGetLotto">조회하기</button>
+        <button type="button" class="btn btn-success" id="btnGetLotto">
+          조회하기
+        </button>
       </footer>
     </section>
 
     <script>
-      // 전역 로또 히스토리 (비동기로 채워질 예정)
+      // 전역 로또 히스토리 (과거 1등 당첨 조합 - 읽기 전용으로만 사용)
       let lottoHistory = new Set();
+      // 히스토리 로드 성공 여부 (실패 시 번호 생성 차단)
+      let historyLoaded = false;
 
       // 설정 상수화
       const LOTTO_CONFIG = {
@@ -137,34 +155,54 @@
       };
 
       /**
-       * 외부 JSON 파일로부터 과거 당첨 내역 로드
+       * 외부 JSON 파일로부터 과거 1등 당첨 내역 로드
+       * 실패 시 throw - 호출부에서 생성 차단 처리
        */
       async function fetchLottoHistory() {
-        try {
-          const response = await fetch("./lotto_history.json");
-          const data = await response.json();
-          lottoHistory = new Set(data);
-        } catch (error) {
-          console.error("과거 내역을 불러오는데 실패했습니다:", error);
+        const response = await fetch("./lotto_history.json");
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
         }
+        const data = await response.json();
+        if (!Array.isArray(data) || data.length === 0) {
+          throw new Error(
+            "히스토리 데이터가 비어있거나 형식이 올바르지 않습니다.",
+          );
+        }
+        lottoHistory = new Set(data);
+        historyLoaded = true;
       }
 
       /**
-       * 로또 번호 생성 및 화면 출력 함수 (성능 최적화 버전)
+       * 로또 번호 생성 및 화면 출력 함수
+       * - 과거 1등 당첨 조합(lottoHistory) 제외
+       * - 같은 화면 내 중복 방지는 별도 Set(sessionKeys)으로 처리 (히스토리 오염 방지)
        * @param {number} times - 생성할 횟수
        */
       const getLotto = (times) => {
         const lottoContainer = document.querySelector(".lotto");
         if (!lottoContainer) return;
 
+        // 히스토리 미로드 상태면 생성하지 않음 (제외 조건 무력화 방지)
+        if (!historyLoaded) {
+          lottoContainer.innerHTML =
+            '<div class="load_error">과거 당첨내역을 불러오지 못해 번호를 생성할 수 없습니다.<br />페이지를 새로고침하거나 웹서버로 실행해 주세요.</div>';
+          return;
+        }
+
         lottoContainer.innerHTML = ""; // 기존 번호 초기화
 
         // DOM 렌더링 최적화를 위한 DocumentFragment 생성
         const fragment = document.createDocumentFragment();
         const generated = [];
+        // 이번 호출에서 생성된 조합 (화면 내 중복 방지 전용 - lottoHistory와 분리)
+        const sessionKeys = new Set();
         let attempts = 0;
 
-        while (generated.length < times && attempts < LOTTO_CONFIG.MAX_ATTEMPTS) {
+        while (
+          generated.length < times &&
+          attempts < LOTTO_CONFIG.MAX_ATTEMPTS
+        ) {
           attempts++;
           const lotto = new Set();
           while (lotto.size < LOTTO_CONFIG.COUNT) {
@@ -172,18 +210,25 @@
             lotto.add(num);
           }
 
-          // [최적화 1] 정렬을 1회만 수행하여 변수에 캐싱
+          // 정렬을 1회만 수행하여 변수에 캐싱
           const sortedLotto = Array.from(lotto).sort((a, b) => a - b);
           const key = sortedLotto.join(",");
 
-          // [최적화 2] Set 객체의 빠른 O(1) 조회 성능을 활용한 중복 검사
-          if (!lottoHistory.has(key)) {
+          // 과거 1등 조합 제외 + 이번 화면 내 중복 제외
+          if (!lottoHistory.has(key) && !sessionKeys.has(key)) {
             generated.push(sortedLotto);
-            lottoHistory.add(key);
+            sessionKeys.add(key);
           }
         }
 
-        // [최적화 3] DocumentFragment에 임시 노드를 추가하여 단 한 번만 DOM 반영
+        // 요청 수량만큼 생성하지 못한 경우 안내 (사실상 발생하지 않지만 방어)
+        if (generated.length < times) {
+          console.warn(
+            `요청 ${times}개 중 ${generated.length}개만 생성되었습니다. (시도 ${attempts}회)`,
+          );
+        }
+
+        // DocumentFragment에 임시 노드를 추가하여 단 한 번만 DOM 반영
         generated.forEach((lotto) => {
           const listDiv = document.createElement("div");
           listDiv.className = "list";
@@ -206,16 +251,22 @@
        * DOM 로드 완료 후 초기화
        */
       document.addEventListener("DOMContentLoaded", async () => {
-        // 과거 데이터 로드 후 첫 로또 생성
-        await fetchLottoHistory();
+        // 과거 데이터 로드 후 첫 로또 생성 (로드 실패 시 생성 차단)
+        try {
+          await fetchLottoHistory();
+        } catch (error) {
+          console.error("과거 내역을 불러오는데 실패했습니다:", error);
+        }
         getLotto(LOTTO_CONFIG.TICKETS_PER_VIEW);
 
         // 로또당첨번호 바로가기 버튼
         const naverLottoUrl =
           "https://m.search.naver.com/search.naver?sm=mtp_hty.top&where=m&query=%EB%A1%9C%EB%98%90%EB%8B%B9%EC%B2%A8%EB%B2%88%ED%98%B8";
-        document.getElementById("btnLottoLink").addEventListener("click", () => {
-          window.open(naverLottoUrl);
-        });
+        document
+          .getElementById("btnLottoLink")
+          .addEventListener("click", () => {
+            window.open(naverLottoUrl);
+          });
 
         // 조회하기 버튼 (번호 재생성)
         document.getElementById("btnGetLotto").addEventListener("click", () => {
