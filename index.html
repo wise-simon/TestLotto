@@ -9,14 +9,8 @@
       rel="icon"
       href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/wcAAwAB/8ZZvFkAAAAASUVORK5CYII="
     />
-    <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css"
-      rel="stylesheet"
-    />
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"
-    />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
 
     <style>
       /* CSS 변수 지정 */
@@ -129,14 +123,10 @@
       <br />
       <br />
       <footer class="footer_f">
-        <button type="button" class="btn btn-success" id="btnLottoLink">
-          로또당첨번호 바로가기
-        </button>
+        <button type="button" class="btn btn-success" id="btnLottoLink">로또당첨번호 바로가기</button>
         <br />
         <br />
-        <button type="button" class="btn btn-success" id="btnGetLotto">
-          조회하기
-        </button>
+        <button type="button" class="btn btn-success" id="btnGetLotto">조회하기</button>
       </footer>
     </section>
 
@@ -165,9 +155,7 @@
         }
         const data = await response.json();
         if (!Array.isArray(data) || data.length === 0) {
-          throw new Error(
-            "히스토리 데이터가 비어있거나 형식이 올바르지 않습니다.",
-          );
+          throw new Error("히스토리 데이터가 비어있거나 형식이 올바르지 않습니다.");
         }
         lottoHistory = new Set(data);
         historyLoaded = true;
@@ -199,10 +187,7 @@
         const sessionKeys = new Set();
         let attempts = 0;
 
-        while (
-          generated.length < times &&
-          attempts < LOTTO_CONFIG.MAX_ATTEMPTS
-        ) {
+        while (generated.length < times && attempts < LOTTO_CONFIG.MAX_ATTEMPTS) {
           attempts++;
           const lotto = new Set();
           while (lotto.size < LOTTO_CONFIG.COUNT) {
@@ -223,9 +208,7 @@
 
         // 요청 수량만큼 생성하지 못한 경우 안내 (사실상 발생하지 않지만 방어)
         if (generated.length < times) {
-          console.warn(
-            `요청 ${times}개 중 ${generated.length}개만 생성되었습니다. (시도 ${attempts}회)`,
-          );
+          console.warn(`요청 ${times}개 중 ${generated.length}개만 생성되었습니다. (시도 ${attempts}회)`);
         }
 
         // DocumentFragment에 임시 노드를 추가하여 단 한 번만 DOM 반영
@@ -262,11 +245,9 @@
         // 로또당첨번호 바로가기 버튼
         const naverLottoUrl =
           "https://m.search.naver.com/search.naver?sm=mtp_hty.top&where=m&query=%EB%A1%9C%EB%98%90%EB%8B%B9%EC%B2%A8%EB%B2%88%ED%98%B8";
-        document
-          .getElementById("btnLottoLink")
-          .addEventListener("click", () => {
-            window.open(naverLottoUrl);
-          });
+        document.getElementById("btnLottoLink").addEventListener("click", () => {
+          window.open(naverLottoUrl);
+        });
 
         // 조회하기 버튼 (번호 재생성)
         document.getElementById("btnGetLotto").addEventListener("click", () => {
