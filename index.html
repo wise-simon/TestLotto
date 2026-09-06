@@ -109,6 +109,73 @@
         font-weight: 700;
         padding: 20px;
       }
+      .lotto_loading {
+        width: min(320px, 86vw);
+        margin: 22px auto;
+        padding: 18px 22px 16px;
+        border: 1px solid #dce8e1;
+        background: linear-gradient(135deg, #f8fffb, #eef8f2);
+        border-radius: 12px;
+        box-shadow: 0 6px 18px rgba(25, 135, 84, 0.08);
+      }
+      .lotto_loading_message {
+        margin-bottom: 11px;
+        color: #146c43;
+        font-size: 16px;
+        font-weight: 700;
+        letter-spacing: 0;
+      }
+      .lotto_loading_dots {
+        display: inline-flex;
+        gap: 4px;
+        margin-left: 3px;
+      }
+      .lotto_loading_dots span {
+        width: 4px;
+        height: 4px;
+        background: #198754;
+        border-radius: 50%;
+        animation: lottoDot 1.2s ease-in-out infinite;
+      }
+      .lotto_loading_dots span:nth-child(2) {
+        animation-delay: 0.15s;
+      }
+      .lotto_loading_dots span:nth-child(3) {
+        animation-delay: 0.3s;
+      }
+      .lotto_loading_track {
+        height: 7px;
+        overflow: hidden;
+        background: #d9eee2;
+        border-radius: 4px;
+      }
+      .lotto_loading_bar {
+        width: 0;
+        height: 100%;
+        background: #198754;
+        border-radius: 4px;
+        animation: lottoLoading 300ms linear forwards;
+      }
+      @keyframes lottoDot {
+        0%,
+        60%,
+        100% {
+          opacity: 0.35;
+          transform: translateY(0);
+        }
+        30% {
+          opacity: 1;
+          transform: translateY(-3px);
+        }
+      }
+      @keyframes lottoLoading {
+        from {
+          width: 0;
+        }
+        to {
+          width: 100%;
+        }
+      }
     </style>
   </head>
   <body>
@@ -140,7 +207,7 @@
       const LOTTO_CONFIG = {
         COUNT: 6,
         MAX_NUMBER: 45,
-        TICKETS_PER_VIEW: 5,
+        TICKETS_PER_VIEW: 1,
         MAX_ATTEMPTS: 10000,
       };
 
@@ -167,7 +234,7 @@
        * - 같은 화면 내 중복 방지는 별도 Set(sessionKeys)으로 처리 (히스토리 오염 방지)
        * @param {number} times - 생성할 횟수
        */
-      const getLotto = (times) => {
+      const getLotto = async (times) => {
         const lottoContainer = document.querySelector(".lotto");
         if (!lottoContainer) return;
 
@@ -178,6 +245,9 @@
           return;
         }
 
+        lottoContainer.innerHTML =
+          '<div class="lotto_loading" role="status" aria-label="로또 번호 생성 중"><div class="lotto_loading_message">AI가 조합 중입니다<span class="lotto_loading_dots"><span></span><span></span><span></span></span></div><div class="lotto_loading_track"><div class="lotto_loading_bar"></div></div></div>';
+        await new Promise((resolve) => window.setTimeout(resolve, 300));
         lottoContainer.innerHTML = ""; // 기존 번호 초기화
 
         // DOM 렌더링 최적화를 위한 DocumentFragment 생성
